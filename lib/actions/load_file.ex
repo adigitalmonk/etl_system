@@ -1,11 +1,12 @@
 defmodule Action.LoadFile do
+  use ETLSystem.Task
+
   @moduledoc false
-  def run(%{ args: args } = workflow) do
-    if args == "fail" do
-      {:err, :given}
-    else
-      IO.inspect(workflow, label: "Load File")
-      {:ok, "alpha", workflow}
-    end
+  def run(%{args: "fail"}) do
+    {:err, :given}
+  end
+
+  def run(workflow) do
+    {:ok, "alpha", workflow}
   end
 end

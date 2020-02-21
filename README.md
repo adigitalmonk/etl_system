@@ -19,3 +19,5 @@ Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_do
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
 be found at [https://hexdocs.pm/etl_system](https://hexdocs.pm/etl_system).
 
+# TODO:
+- Telemetry for event reporting

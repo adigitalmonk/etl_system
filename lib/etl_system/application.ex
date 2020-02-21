@@ -5,8 +5,7 @@ defmodule ETLSystem.Application do
 
   def start(_type, _args) do
     children = [
-      {Registry, keys: :unique, name: ETLSystem.Action.Registry},
-      ETLSystem.Action.DynamicSupervisor,
+      {Task.Supervisor, name: ETLSystem.Action.Supervisor},
       ETLSystem.Orchestrator
     ]
 

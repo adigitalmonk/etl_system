@@ -32,6 +32,7 @@ defmodule ETLSystem.Orchestrator do
       end)
 
     Keyword.get(workflow, :steps)
+    |> ETLSystem.Workflow.new()
     |> ETLSystem.Action.run()
 
     {:noreply, workflows}

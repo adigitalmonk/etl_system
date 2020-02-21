@@ -1,6 +1,7 @@
 defmodule ETLSystem.Action do
   @moduledoc false
   use GenServer
+  alias ETLSystem.Workflow
 
   def start_link(action_module) do
     GenServer.start_link(__MODULE__, action_module, name: get_name(action_module))
@@ -17,39 +18,41 @@ defmodule ETLSystem.Action do
     {:ok, action_module}
   end
 
-  def run(steps, previous \\ nil)
+  def run(%Workflow{next: [{next, args} | rest]} = workflow) do
+    workflow =
+      workflow
+      |> Map.put(:args, args)
+      |> Map.put(:next, rest)
 
-  def run([{action_module, args} | next_steps], previous) do
-    get_name(action_module)
-    |> GenServer.cast({:run, args, previous, next_steps})
+    get_name(next)
+    |> GenServer.cast({:run, workflow})
   end
 
-  def run([action_module | next_steps], previous) do
-    get_name(action_module)
-    |> GenServer.cast({:run, previous, next_steps})
+  def run(%Workflow{next: [next | rest]} = workflow) do
+    get_name(next)
+    |> GenServer.cast({:run, Workflow.next(workflow, rest)})
+  end
+
+  def run(%Workflow{next: []} = workflow) do
+    IO.inspect(workflow, label: "Finished Workflow")
   end
 
   @impl true
-  def handle_call(_msg, _from, mod) do
-    # IO.inspect msg, label: "Call"
-    {:noreply, mod}
-  end
+  def handle_cast({:run, workflow}, mod) do
+    case apply(mod, :run, [workflow]) do
+      {:ok, result, workflow} ->
+        workflow
+        |> Workflow.previous(result)
+        |> __MODULE__.run()
 
-  @impl true
-  def handle_cast({:run, previous, next}, mod) do
-    output = apply(mod, :run, [[previous: previous]])
-    if next != [], do: __MODULE__.run(next, output)
-    {:noreply, mod}
-  end
+      {:err, reason} ->
+        IO.puts("Something broke! [#{reason}]")
+    end
 
-  def handle_cast({:run, args, previous, next}, mod) do
-    output = apply(mod, :run, [[args: args, previous: previous]])
-    if next != [], do: __MODULE__.run(next, output)
     {:noreply, mod}
   end
 
   def handle_cast(_thing, mod) do
-    # IO.inspect thing, label: "Cast"
     {:noreply, mod}
   end
 end

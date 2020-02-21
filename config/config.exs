@@ -18,5 +18,12 @@ config :etl_system, ETLSystem.Workflows, [
       {Action.MangleData, "data/test1.txt"},
       Action.MangleData
     ]
+  ],
+  [
+    task_id: "failure",
+    steps: [
+      {Action.WriteFile, "data/test2.txt"},
+      {Action.LoadFile, "fail"}
+    ]
   ]
 ]

@@ -1,7 +1,7 @@
 defmodule Action.MangleData do
   @moduledoc false
-  def run(args) do
-    IO.inspect(args, label: "Mangle Data w/ Arg!")
-    "beta"
+  def run(workflow) do
+    IO.inspect(workflow, label: "Mangle Data w/ Arg!")
+    {:ok, "beta", workflow}
   end
 end

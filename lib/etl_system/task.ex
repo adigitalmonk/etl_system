@@ -1,7 +1,13 @@
 defmodule ETLSystem.Task do
   @moduledoc false
 
-  @callback run(ETLSystem.Workflow.t()) :: {:ok, term(), ETLSystem.Workflow.t()} | {:err, :error}
+  @callback run(ETLSystem.Workflow.t()) ::
+              {
+                :ok,
+                term(),
+                ETLSystem.Workflow.t()
+              }
+              | {:err, :error, ETLSystem.Workflow.t()}
 
   defmacro __using__(_opts) do
     quote do

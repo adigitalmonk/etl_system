@@ -2,20 +2,21 @@ import Config
 
 config :etl_system, ETLSystem.Workflows, [
   [
-    task_id: "new",
+    id: "new",
     steps: [
       Action.Branch,
       {Action.Branch, "text"}
     ]
   ],
   [
-    task_id: "count",
+    id: "count",
+    schedule: "second",
     steps: [
       {Action.Counter, 10}
     ]
   ],
   [
-    task_id: "first",
+    id: "first",
     steps: [
       {Action.LoadFile, "data/test.txt"},
       Action.MangleData,
@@ -23,7 +24,7 @@ config :etl_system, ETLSystem.Workflows, [
     ]
   ],
   [
-    task_id: "failure",
+    id: "failure",
     steps: [
       {Action.WriteFile, "data/test2.txt"},
       {Action.LoadFile, "fail"}

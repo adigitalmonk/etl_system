@@ -2,8 +2,8 @@ defmodule Action.LoadFile do
   use ETLSystem.Task
 
   @moduledoc false
-  def run(%{args: "fail"}) do
-    {:err, :given}
+  def run(%{args: "fail"} = workflow) do
+    {:err, :given, workflow}
   end
 
   def run(workflow) do

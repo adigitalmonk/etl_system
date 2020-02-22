@@ -2,7 +2,7 @@ defmodule Action.Counter do
   use ETLSystem.Task
 
   @moduledoc false
-  def run(%{previous: previous, args: target, next: next} = workflow) when previous == nil do
+  def run(%{previous: nil, args: target, next: next} = workflow) do
     # IO.inspect(previous, label: "First")
     Process.sleep(500)
     {:ok, 1, ETLSystem.Workflow.next(workflow, [{__MODULE__, target} | next])}

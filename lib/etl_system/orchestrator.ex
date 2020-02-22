@@ -40,15 +40,16 @@ defmodule ETLSystem.Orchestrator do
   def run_task(%Workflow{next: [next | rest]} = workflow) do
     workflow =
       workflow
+      |> Map.put(:args, nil)
       |> Map.put(:next, rest)
 
     Task.Supervisor.start_child(ActionSupervisor, next, :process, [workflow])
   end
 
-  def run_task(%Workflow{next: []} = _workflow) do
+  def run_task(%Workflow{next: []} = workflow) do
     # Telemetry: Workflow Complete { workflow_id, final_value, timestamp }
     IO.puts("End of the line!")
-    # IO.inspect(workflow, label: "Done")
+    IO.inspect(workflow, label: "Done")
   end
 
   def receive({:ok, result, workflow}) do

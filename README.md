@@ -20,4 +20,7 @@ and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
 be found at [https://hexdocs.pm/etl_system](https://hexdocs.pm/etl_system).
 
 # TODO:
-- Telemetry for event reporting
+- Simplify "Scheduler.State" to "Schedule" ?
+- Remove telemetry attachments
+- Write this document
+- Implement `schedule` option without conflicting with `frequency`

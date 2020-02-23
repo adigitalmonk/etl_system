@@ -17,7 +17,11 @@ defmodule ETLSystem.Orchestrator do
     |> Enum.each(fn workflow ->
       with schedule when schedule != nil <- Keyword.get(workflow, :schedule),
            workflow_id when workflow_id != nil <- Keyword.get(workflow, :id) do
-        SchedulerSupervisor.start_schedule(workflow_id, schedule)
+        SchedulerSupervisor.start_schedule(workflow_id, {:schedule, schedule})
+      end
+      with frequency when frequency != nil <- Keyword.get(workflow, :frequency),
+            workflow_id when workflow_id != nil <- Keyword.get(workflow, :id) do
+        SchedulerSupervisor.start_schedule(workflow_id, {:frequency, frequency})
       end
     end)
 
@@ -46,10 +50,15 @@ defmodule ETLSystem.Orchestrator do
     Task.Supervisor.start_child(ActionSupervisor, next, :process, [workflow])
   end
 
-  def run_task(%Workflow{next: []} = workflow) do
-    # Telemetry: Workflow Complete { workflow_id, final_value, timestamp }
-    IO.puts("End of the line!")
-    IO.inspect(workflow, label: "Done")
+  def run_task(%Workflow{next: [], id: id} = workflow) do
+    :telemetry.execute(
+      [:etl, :run, :finished],
+      %{
+        workflow_id: id,
+        timestamp: DateTime.utc_now()
+      },
+      workflow
+    )
   end
 
   def receive({:ok, result, workflow}) do
@@ -58,9 +67,16 @@ defmodule ETLSystem.Orchestrator do
     |> run_task()
   end
 
-  def receive({:err, reason, _workflow}) do
-    # Telemetry: Workflow Failure { workflow_id, final_value, timestamp, workflow }
-    IO.puts("Something broke! [#{reason}]")
+  def receive({:err, reason, workflow}) do
+    :telemetry.execute(
+      [:etl, :run, :finished],
+      %{
+        workflow_id: workflow.id,
+        reason: reason,
+        timestamp: DateTime.utc_now()
+      },
+      workflow
+    )
   end
 
   @impl true
@@ -71,9 +87,20 @@ defmodule ETLSystem.Orchestrator do
         Keyword.get(workflow, :id) == workflow_id
       end)
 
-    Keyword.get(workflow, :steps)
-    |> ETLSystem.Workflow.new(workflow_id)
-    |> __MODULE__.run_task()
+    workflow =
+      Keyword.get(workflow, :steps)
+      |> ETLSystem.Workflow.new(workflow_id)
+
+    :telemetry.execute(
+      [:etl, :run, :started],
+      %{
+        workflow_id: workflow.id,
+        timestamp: DateTime.utc_now()
+      },
+      workflow
+    )
+
+    __MODULE__.run_task(workflow)
 
     {:noreply, workflows}
   end

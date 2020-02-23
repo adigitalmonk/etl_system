@@ -15,6 +15,16 @@ defmodule ETLSystem.Task do
       use Task
 
       def process(workflow) do
+        :telemetry.execute(
+          [:etl, :run, :action],
+          %{
+            workflow_id: workflow.id,
+            timestamp: DateTime.utc_now(),
+            action: __MODULE__,
+          },
+          workflow
+        )
+
         run(workflow)
         |> ETLSystem.Orchestrator.receive()
       end

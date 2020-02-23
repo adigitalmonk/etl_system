@@ -10,7 +10,7 @@ config :etl_system, ETLSystem.Workflows, [
   ],
   [
     id: "count",
-    schedule: "second",
+    frequency: "minute",
     steps: [
       {Action.Counter, 10}
     ]

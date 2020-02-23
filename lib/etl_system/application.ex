@@ -11,6 +11,8 @@ defmodule ETLSystem.Application do
       ETLSystem.Orchestrator
     ]
 
+    ETLSystem.Events.init_logs()
+
     opts = [strategy: :one_for_one, name: ETLSystem.Supervisor]
     Supervisor.start_link(children, opts)
   end

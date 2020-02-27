@@ -11,7 +11,7 @@ defmodule ETLSystem.Orchestrator do
 
   @impl true
   def init(_) do
-    workflows = Application.get_env(:etl_system, ETLSystem.Workflows)
+    workflows = Application.get_env(:etl_system, ETLSystem.Workflows) || []
 
     workflows
     |> Enum.each(fn workflow ->
@@ -89,7 +89,7 @@ defmodule ETLSystem.Orchestrator do
 
     workflow =
       Keyword.get(workflow, :steps)
-      |> ETLSystem.Workflow.new(workflow_id)
+      |> ETLSystem.Workflow.new(workflow_id, :rand.uniform(1_000_000)) # TODO: Better id generator
 
     :telemetry.execute(
       [:etl, :run, :started],

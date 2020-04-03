@@ -1,6 +1,17 @@
 defmodule ETLSystem.Scheduler.State do
+  @moduledoc """
+  This struct stores the state for a running scheduler.
+  """
+
+  @typedoc """
+  Structure of the state of a workflow
+  """
+  @type t :: %__MODULE__{workflow_id: binary(), schedule: term(), timer: term()}
   defstruct [:workflow_id, :schedule, :timer]
 
+  @doc """
+  Build a new workflow scheduler state
+  """
   def new(workflow_id, schedule) do
     %__MODULE__{
       workflow_id: workflow_id,
@@ -9,23 +20,17 @@ defmodule ETLSystem.Scheduler.State do
     }
   end
 
-  def new(workflow_id, schedule, timer) do
-    %__MODULE__{
-      workflow_id: workflow_id,
-      schedule: schedule,
-      timer: timer
-    }
-  end
-
+  @doc false
   def next(state, timer) do
     %__MODULE__{
-      state |
-      timer: timer
+      state
+      | timer: timer
     }
   end
 
-  def next?(state), do: state.timer
-
+  @doc """
+  Kick off the workflow defined in this scheduler
+  """
   def start(state) do
     :telemetry.execute(
       [:etl, :run, :schedule],
@@ -39,21 +44,13 @@ defmodule ETLSystem.Scheduler.State do
     ETLSystem.Orchestrator.run_workflow(state.workflow_id)
 
     %__MODULE__{
-      state |
-      timer: schedule_next(state.schedule)
+      state
+      | timer: schedule_next(state.schedule)
     }
   end
 
-  #### Logic
-  # defp next_minute() do
-  #   DateTime.utc_now()
-  #   |> DateTime.to_unix()
-  #   |> div(60)
-  #   |> Kernel.*(60)
-  #   |> DateTime.from_unix!()
-  # end
-
   @periods ["hour", "minute", "day"]
+
   defp seconds_until_next(period) do
     case period do
       "minute" ->
@@ -68,11 +65,10 @@ defmodule ETLSystem.Scheduler.State do
   end
 
   defp schedule_next({:frequency, frequency}) when frequency in @periods do
-      Process.send_after(self(), :tick, seconds_until_next(frequency) * 1000)
+    Process.send_after(self(), :tick, seconds_until_next(frequency) * 1000)
   end
 
   defp schedule_next({:frequency, _}), do: nil
-
 
   defp schedule_next({:schedule, "minute"}) do
     Process.send_after(self(), :tick, 60_000)

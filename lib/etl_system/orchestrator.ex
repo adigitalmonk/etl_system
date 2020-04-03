@@ -5,10 +5,17 @@ defmodule ETLSystem.Orchestrator do
   alias ETLSystem.Scheduler.DynamicSupervisor, as: SchedulerSupervisor
   alias ETLSystem.Workflow
 
+  @doc false
   def start_link(opts) do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
+  @doc """
+  Load all of the workflows into the system.
+
+  For any workflow with a schedule or interval defined,
+  start up a scheduler to automatically run it on that schedule.
+  """
   @impl true
   def init(_) do
     workflows = Application.get_env(:etl_system, ETLSystem.Workflows) || []
@@ -19,8 +26,9 @@ defmodule ETLSystem.Orchestrator do
            workflow_id when workflow_id != nil <- Keyword.get(workflow, :id) do
         SchedulerSupervisor.start_schedule(workflow_id, {:schedule, schedule})
       end
+
       with frequency when frequency != nil <- Keyword.get(workflow, :frequency),
-            workflow_id when workflow_id != nil <- Keyword.get(workflow, :id) do
+           workflow_id when workflow_id != nil <- Keyword.get(workflow, :id) do
         SchedulerSupervisor.start_schedule(workflow_id, {:frequency, frequency})
       end
     end)
@@ -28,9 +36,18 @@ defmodule ETLSystem.Orchestrator do
     {:ok, workflows}
   end
 
+  @doc """
+  Kick off a workflow process.
+  """
   def run_workflow(workflow_id) do
     GenServer.cast(__MODULE__, {:run, workflow_id})
   end
+
+  @doc """
+  Run a given task in a workflow by pulling it from the list of next steps.
+  If there are no :next steps, acknowledge completion.
+  """
+  def run_task(workflow)
 
   def run_task(%Workflow{next: [{next, args} | rest]} = workflow) do
     workflow =
@@ -61,6 +78,13 @@ defmodule ETLSystem.Orchestrator do
     )
   end
 
+  @doc """
+  Handle the result of a task executing.
+  If the result's first term is the :err atom, it'll throw a telemetry event and stop execution
+  If it's :ok, it'll mark the result into the
+  """
+  def receive(result)
+
   def receive({:ok, result, workflow}) do
     workflow
     |> Workflow.previous(result)
@@ -79,6 +103,14 @@ defmodule ETLSystem.Orchestrator do
     )
   end
 
+  defp generate_run_id do
+    # This isn't the best approach, but it works for now
+    :rand.uniform(1_000_000)
+  end
+
+  @doc """
+  Kick off a workflow for a given workflow_id
+  """
   @impl true
   def handle_cast({:run, workflow_id}, workflows) do
     workflow =
@@ -89,7 +121,7 @@ defmodule ETLSystem.Orchestrator do
 
     workflow =
       Keyword.get(workflow, :steps)
-      |> ETLSystem.Workflow.new(workflow_id, :rand.uniform(1_000_000)) # TODO: Better id generator
+      |> ETLSystem.Workflow.new(workflow_id, generate_run_id())
 
     :telemetry.execute(
       [:etl, :run, :started],

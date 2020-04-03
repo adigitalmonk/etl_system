@@ -3,6 +3,7 @@ defmodule ETLSystem.Application do
 
   use Application
 
+  @doc false
   def start(_type, _args) do
     children = [
       {Registry, keys: :unique, name: ETLSystem.Scheduler.Registry},
@@ -11,7 +12,7 @@ defmodule ETLSystem.Application do
       ETLSystem.Orchestrator
     ]
 
-    ETLSystem.Events.init_logs()
+    # ETLSystem.Events.init_logs()
 
     opts = [strategy: :one_for_one, name: ETLSystem.Supervisor]
     Supervisor.start_link(children, opts)

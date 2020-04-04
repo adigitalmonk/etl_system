@@ -2,32 +2,23 @@ import Config
 
 config :etl_system, ETLSystem.Workflows, [
   [
-    id: "new",
+    id: "branch_to_count",
     steps: [
-      Action.Branch,
-      {Action.Branch, "text"}
+      {Examples.Branch, "count"}
     ]
   ],
   [
-    id: "count",
+    id: "count_to_ten",
     frequency: "minute",
     steps: [
-      {Action.Counter, 10}
+      {Examples.Counter, 10}
     ]
   ],
   [
-    id: "first",
+    id: "pass_then_fail",
     steps: [
-      {Action.LoadFile, "data/test.txt"},
-      Action.MangleData,
-      {Action.WriteFile, "data/test2.txt"}
-    ]
-  ],
-  [
-    id: "failure",
-    steps: [
-      {Action.WriteFile, "data/test2.txt"},
-      {Action.LoadFile, "fail"}
+      {Examples.FailTask, "pass"},
+      {Examples.FailTask, "fail"}
     ]
   ]
 ]

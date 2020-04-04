@@ -1,4 +1,4 @@
-defmodule Action.Branch do
+defmodule Examples.Branch do
   @moduledoc """
   Example branching task
   """
@@ -8,8 +8,8 @@ defmodule Action.Branch do
   If the previous result was "test", inject the LoadFile task as the next step
   Otherwise, just continue on with the next steps.
   """
-  def run(%{previous: "test", next: next} = workflow) do
-    {:ok, nil, next(workflow, [Action.LoadFile | next])}
+  def run(%{previous: "count"} = workflow) do
+    {:ok, nil, next_steps(workflow, [Example.Counter | workflow.next])}
   end
 
   def run(workflow) do

@@ -184,7 +184,7 @@ defmodule Example.Branch do
   Otherwise, just continue on with the next steps.
   """
   def run(%{previous: "load", next: next} = workflow) do
-    {:ok, nil, next(workflow, [Example.LoadFile | next])}
+    {:ok, nil, next_steps(workflow, [Example.LoadFile | next])}
   end
 
   def run(workflow) do
@@ -224,18 +224,18 @@ defmodule Example.Counter do
   inject this module back into the workflow and increment the return value
   based on the value of the previous result
   """
-  def run(%{previous: nil, args: target, next: next} = workflow) do
+  def run(%{previous: nil, args: target} = workflow) do
     Process.sleep(500)
-    {:ok, 1, next(workflow, [{__MODULE__, target} | next])}
+    {:ok, 1, next_steps(workflow, [{__MODULE__, target} | workflow.next])}
   end
 
-  def run(%{previous: previous, args: target, next: next} = workflow) when previous >= target do
-    {:ok, previous, next(workflow, next)}
+  def run(%{previous: previous, args: target} = workflow) when previous >= target do
+    {:ok, previous, next_steps(workflow, next)}
   end
 
-  def run(%{previous: previous, args: target, next: next} = workflow) do
+  def run(%{previous: previous, args: target} = workflow) do
     Process.sleep(500)
-    {:ok, previous + 1, next(workflow, [{__MODULE__, target} | next])}
+    {:ok, previous + 1, next_steps(workflow, [{__MODULE__, target} | workflow.next])}
   end
 end
 ```

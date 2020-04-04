@@ -1,4 +1,4 @@
-defmodule Action.Counter do
+defmodule Examples.Counter do
   @moduledoc """
   Example task that updates the next steps to simulate counting
   """
@@ -11,16 +11,16 @@ defmodule Action.Counter do
   """
   def run(%{previous: nil, args: target, next: next} = workflow) do
     Process.sleep(500)
-    {:ok, 1, next(workflow, [{__MODULE__, target} | next])}
+    {:ok, 1, next_steps(workflow, [{__MODULE__, target} | next])}
   end
 
   def run(%{previous: previous, args: target, next: next} = workflow) when previous >= target do
     Process.sleep(500)
-    {:ok, previous, next(workflow, next)}
+    {:ok, previous, next_steps(workflow, next)}
   end
 
   def run(%{previous: previous, args: target, next: next} = workflow) do
     Process.sleep(500)
-    {:ok, previous + 1, next(workflow, [{__MODULE__, target} | next])}
+    {:ok, previous + 1, next_steps(workflow, [{__MODULE__, target} | next])}
   end
 end

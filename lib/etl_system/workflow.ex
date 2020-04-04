@@ -31,5 +31,5 @@ defmodule ETLSystem.Workflow do
 
   This is used by a task that wants to change the future tasks in the workflow.
   """
-  def next(workflow, next), do: %__MODULE__{workflow | next: next}
+  def next_steps(workflow, next), do: %__MODULE__{workflow | next: next}
 end

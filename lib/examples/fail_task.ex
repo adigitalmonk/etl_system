@@ -1,4 +1,4 @@
-defmodule Example.Actions.FailTask do
+defmodule Examples.FailTask do
   @moduledoc """
   Example task to show off failing workflows, masquerading as a file loader
   """
@@ -13,6 +13,6 @@ defmodule Example.Actions.FailTask do
   end
 
   def run(workflow) do
-    {:ok, "alpha", workflow}
+    {:ok, "delta", workflow}
   end
 end

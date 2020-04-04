@@ -32,21 +32,23 @@ defmodule ETLSystem.Scheduler.State do
   Kick off the workflow defined in this scheduler
   """
   def start(state) do
-    :telemetry.execute(
-      [:etl, :run, :schedule],
-      %{
-        workflow_id: state.workflow_id,
-        timestamp: DateTime.utc_now()
-      },
-      state
-    )
-
-    ETLSystem.Orchestrator.run_workflow(state.workflow_id)
-
-    %__MODULE__{
+    updated_state = %__MODULE__{
       state
       | timer: schedule_next(state.schedule)
     }
+
+    :telemetry.execute(
+      [:etl, :run, :schedule],
+      %{
+        workflow_id: updated_state.workflow_id,
+        timestamp: DateTime.utc_now()
+      },
+      updated_state
+    )
+
+    ETLSystem.Orchestrator.run_workflow(updated_state.workflow_id)
+
+    updated_state
   end
 
   @periods ["hour", "minute", "day"]

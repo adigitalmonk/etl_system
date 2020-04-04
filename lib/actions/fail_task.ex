@@ -1,4 +1,4 @@
-defmodule Action.LoadFile do
+defmodule Example.Actions.FailTask do
   @moduledoc """
   Example task to show off failing workflows, masquerading as a file loader
   """

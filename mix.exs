@@ -24,7 +24,7 @@ defmodule ETLSystem.MixProject do
 
   defp aliases do
     [
-      check: ["credo --strict", "inch"],
+      check: ["format", "credo --strict", "inch"],
       build: ["check", "compile"]
     ]
   end

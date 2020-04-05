@@ -40,7 +40,6 @@ defmodule ETLSystem.Scheduler.State do
     :telemetry.execute(
       [:etl, :run, :schedule],
       %{
-        workflow_id: updated_state.workflow_id,
         timestamp: DateTime.utc_now()
       },
       updated_state

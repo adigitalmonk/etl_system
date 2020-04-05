@@ -9,7 +9,7 @@ defmodule Examples.Branch do
   Otherwise, just continue on with the next steps.
   """
   def run(%{previous: "count"} = workflow) do
-    {:ok, nil, next_steps(workflow, [Example.Counter | workflow.next])}
+    {:ok, nil, next_up(workflow, Example.Counter)}
   end
 
   def run(workflow) do

@@ -9,18 +9,17 @@ defmodule Examples.Counter do
   inject this module back into the workflow and increment the return value
   based on the value of the previous result
   """
-  def run(%{previous: nil, args: target, next: next} = workflow) do
+  def run(%{previous: nil, args: target} = workflow) do
     Process.sleep(500)
-    {:ok, 1, next_steps(workflow, [{__MODULE__, target} | next])}
+    {:ok, 1, next_up(workflow, __MODULE__, target)}
   end
 
-  def run(%{previous: previous, args: target, next: next} = workflow) when previous >= target do
-    Process.sleep(500)
-    {:ok, previous, next_steps(workflow, next)}
+  def run(%{previous: previous, args: target} = workflow) when previous >= target do
+    {:ok, previous, workflow}
   end
 
-  def run(%{previous: previous, args: target, next: next} = workflow) do
+  def run(%{previous: previous, args: target} = workflow) do
     Process.sleep(500)
-    {:ok, previous + 1, next_steps(workflow, [{__MODULE__, target} | next])}
+    {:ok, previous + 1, next_up(workflow, __MODULE__, target)}
   end
 end

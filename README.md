@@ -154,16 +154,15 @@ The following events are published.
 
 | Event tags | Purpose | Measurement | Metadata |
 | :--------- | :------ | :---------- | :------- |
-| `[:etl, :run, :started]` | A workflow has begun. | TBD | TBD |
-| `[:etl, :run, :schedule]` | A schedule for a workflow has triggered. | TBD | TBD |
-| `[:etl, :run, :finished]` | A workflow has finished the entire process. | TBD | TBD |
-| `[:etl, :run, :failed]` | A workflow has failed to complete. | TBD | TBD |
-| `[:etl, :run, :action]` | An individual task in the workflow has completed. | TBD | TBD |
-
+| `[:etl, :run, :started]` | A workflow has begun. | Map containing the current UTC timestamp. | Current state of the workflow in the form of an `ETLSystem.Workflow{}` |
+| `[:etl, :run, :schedule]` | A schedule for a workflow has triggered. | Map containing the current UTC timestamp. | Status of the schedule in the form of an `ETLSystem.Scheduler.State{}` |
+| `[:etl, :run, :finished]` | A workflow has finished the entire process. | Map containing the current UTC timestamp. | Current state of the workflow in the form of an `ETLSystem.Workflow{}` |
+| `[:etl, :run, :failed]` | A workflow has failed to complete. | Map containing the current UTC timestamp. | Current state of the workflow in the form of an `ETLSystem.Workflow{}` |
+| `[:etl, :run, :action]` | An individual task in the workflow has completed. | Map containing the current UTC timestamp and the current task that is starting. | Current state of the workflow in the form of an `ETLSystem.Workflow{}` |
 
 ### Advanced Features
 
-Due to the nature of being able to alter the state of the workflow mid-execution, a given task has a lot of control over execution.
+Due to the nature of being able to alter the state of the workflow mid-execution, a given task has a lot of control over everything that follows it.
 
 One useful feature of this is the ability to affect future steps in the process.
 This allows us to create both recursive steps as well as branching steps.
@@ -184,7 +183,7 @@ defmodule Example.Branch do
   Otherwise, just continue on with the next steps.
   """
   def run(%{previous: "load", next: next} = workflow) do
-    {:ok, nil, next_steps(workflow, [Example.LoadFile | next])}
+    {:ok, nil, next_up(workflow, Example.LoadFile)}
   end
 
   def run(workflow) do
@@ -213,7 +212,7 @@ config :etl_system, ETLSystem.Workflows, [
 ```
 
 ```elixir
-defmodule Example.Counter do
+defmodule Examples.Counter do
   @moduledoc """
   Example task that updates the next steps to simulate counting
   """
@@ -226,16 +225,16 @@ defmodule Example.Counter do
   """
   def run(%{previous: nil, args: target} = workflow) do
     Process.sleep(500)
-    {:ok, 1, next_steps(workflow, [{__MODULE__, target} | workflow.next])}
+    {:ok, 1, next_up(workflow, __MODULE__, target)}
   end
 
   def run(%{previous: previous, args: target} = workflow) when previous >= target do
-    {:ok, previous, next_steps(workflow, next)}
+    {:ok, previous, workflow}
   end
 
   def run(%{previous: previous, args: target} = workflow) do
     Process.sleep(500)
-    {:ok, previous + 1, next_steps(workflow, [{__MODULE__, target} | workflow.next])}
+    {:ok, previous + 1, next_up(workflow, __MODULE__, target)}
   end
 end
 ```
@@ -244,4 +243,4 @@ end
 - Tests
 - Create actually useful default tasks
 - Cron-like `schedule` option
-- Better define Telemetry events
+- Better defined Telemetry events

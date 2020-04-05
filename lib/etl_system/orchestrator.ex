@@ -67,11 +67,10 @@ defmodule ETLSystem.Orchestrator do
     Task.Supervisor.start_child(ActionSupervisor, next, :process, [workflow])
   end
 
-  def run_task(%Workflow{next: [], id: id} = workflow) do
+  def run_task(%Workflow{next: []} = workflow) do
     :telemetry.execute(
       [:etl, :run, :finished],
       %{
-        workflow_id: id,
         timestamp: DateTime.utc_now()
       },
       workflow
@@ -93,9 +92,8 @@ defmodule ETLSystem.Orchestrator do
 
   def receive({:err, reason, workflow}) do
     :telemetry.execute(
-      [:etl, :run, :finished],
+      [:etl, :run, :failed],
       %{
-        workflow_id: workflow.id,
         reason: reason,
         timestamp: DateTime.utc_now()
       },
@@ -129,7 +127,6 @@ defmodule ETLSystem.Orchestrator do
     :telemetry.execute(
       [:etl, :run, :started],
       %{
-        workflow_id: workflow.id,
         timestamp: DateTime.utc_now()
       },
       workflow

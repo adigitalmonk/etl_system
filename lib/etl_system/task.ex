@@ -24,9 +24,8 @@ defmodule ETLSystem.Task do
         :telemetry.execute(
           [:etl, :run, :action],
           %{
-            workflow_id: workflow.id,
             timestamp: DateTime.utc_now(),
-            action: __MODULE__
+            task: __MODULE__
           },
           workflow
         )

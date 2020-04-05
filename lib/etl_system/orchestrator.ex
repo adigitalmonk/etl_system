@@ -103,9 +103,12 @@ defmodule ETLSystem.Orchestrator do
     )
   end
 
-  defp generate_run_id do
-    # This isn't the best approach, but it works for now
-    :rand.uniform(1_000_000)
+  @doc """
+  Generate a run ID that will be given to the workflow execution.
+  """
+  def generate_run_id do
+    DateTime.utc_now()
+    |> DateTime.to_unix(:microsecond)
   end
 
   @doc """

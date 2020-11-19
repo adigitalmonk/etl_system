@@ -6,7 +6,13 @@ defmodule ETLSystem.Workflow do
   @typedoc """
   Defines the structure of a workflow.
   """
-  @type t :: %__MODULE__{id: binary(), next: list(), args: any(), previous: any(), run_id: term()}
+  @type t :: %__MODULE__{
+          id: binary() | atom(),
+          next: list(),
+          args: any(),
+          previous: any(),
+          run_id: binary() | atom()
+        }
 
   defstruct [:id, :next, :args, :previous, :run_id]
 
@@ -16,6 +22,7 @@ defmodule ETLSystem.Workflow do
   - The name of the workflow defined in the config
   - A unique identifier for the run itself for logging purposes
   """
+  @spec new(t(), binary() | atom(), binary() | atom()) :: t()
   def new(workflow_steps, id, run_id),
     do: %__MODULE__{id: id, next: workflow_steps, run_id: run_id}
 
@@ -24,6 +31,7 @@ defmodule ETLSystem.Workflow do
 
   This is used by the runner to store the result of a task for the next task to receive
   """
+  @spec previous(t(), any()) :: t()
   def previous(workflow, previous), do: %__MODULE__{workflow | previous: previous}
 
   @doc """
@@ -31,6 +39,7 @@ defmodule ETLSystem.Workflow do
 
   This is used by a task that wants to change all future tasks in the workflow.
   """
+  @spec next_steps(t(), list(module())) :: t()
   def next_steps(workflow, next), do: %__MODULE__{workflow | next: next}
 
   @doc """
@@ -38,6 +47,7 @@ defmodule ETLSystem.Workflow do
 
   This is used by a task that wants to only add one step into the future.
   """
+  @spec next_up(t(), module()) :: t()
   def next_up(workflow, next), do: %__MODULE__{workflow | next: [next | workflow.next]}
 
   @doc """
@@ -49,6 +59,7 @@ defmodule ETLSystem.Workflow do
   E.g.,
     `next_up(workflow, __MODULE__, 10)` is the same as `next_up(workflow, {__MODULE__, 10})`
   """
+  @spec next_up(t(), module(), any()) :: t()
   def next_up(workflow, next, target),
     do: %__MODULE__{workflow | next: [{next, target} | workflow.next]}
 end

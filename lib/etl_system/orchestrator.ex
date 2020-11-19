@@ -2,7 +2,6 @@ defmodule ETLSystem.Orchestrator do
   @moduledoc false
   use GenServer
   alias ETLSystem.Action.Supervisor, as: ActionSupervisor
-  alias ETLSystem.Scheduler.DynamicSupervisor, as: SchedulerSupervisor
   alias ETLSystem.Workflow
 
   @doc false
@@ -12,27 +11,10 @@ defmodule ETLSystem.Orchestrator do
 
   @doc """
   Load all of the workflows into the system.
-
-  For any workflow with a schedule or interval defined,
-  start up a scheduler to automatically run it on that schedule.
   """
   @impl true
   def init(_) do
     workflows = Application.get_env(:etl_system, ETLSystem.Workflows) || []
-
-    workflows
-    |> Enum.each(fn workflow ->
-      with schedule when schedule != nil <- Keyword.get(workflow, :schedule),
-           workflow_id when workflow_id != nil <- Keyword.get(workflow, :id) do
-        SchedulerSupervisor.start_schedule(workflow_id, {:schedule, schedule})
-      end
-
-      with frequency when frequency != nil <- Keyword.get(workflow, :frequency),
-           workflow_id when workflow_id != nil <- Keyword.get(workflow, :id) do
-        SchedulerSupervisor.start_schedule(workflow_id, {:frequency, frequency})
-      end
-    end)
-
     {:ok, workflows}
   end
 

@@ -1,7 +1,7 @@
 # ETLSystem
 
 This is a simple application for running concurrent tasks in a given order.
-It consists of three components: tasks, schedules, and workflows.
+It consists of two components: tasks and workflows.
 
 ## Installation
 
@@ -101,53 +101,6 @@ Now whenever you want to trigger this new workflow, you can use the following:
 iex(1)> ETLSystem.Orchestrator.run_workflow("read_file_to_database")
 ```
 
-### Scheduling
-
-In order to make these happen automatically, there are two strategies currently implemeted.
-
-The first strategy is a simple `:schedule`, the second is the slightly less simple `:frequency`.
-
-#### Schedule
-The `:schedule` option will trigger the workflow to happen after a period of time has happened.
-
-There are two shortcuts for this, `"minute"` and `"second"`, and otherwise will accept any number (in milliseconds).
-
-This means if you put `schedule: "minute"` and the system comes online at `10:32:42`, the workflow will run at `10:33:42`, `10:34:42`, etc.
-Due to the nature of computers, I cannot guarantee this won't drift over time. This is because the scheduler will not re-queue the next step until after it has accepted it's own internal `:tick` message.
-
-```elixir
-config :etl_system, ETLSystem.Workflows, [
-  [
-    id: "server_tick",
-    schedule: "minute",
-    steps: [ Example.Tick ]
-  ]
-]
-```
-
-#### Frequency
-The `:frequency` option will trigger the workflow on a given point in time periodically.
-
-The are three options available currently, `"minute"`, `"hour"`, and `"day"`.
-
-If the workflow is configured such that `frequency: "hour"` and you bring the system online at `10:32:42`, it will trigger at `11:00:00`, `12:00:00`, etc.
-
-This system will not drift over time because it recalculates the time until the next period after every time the schedule ticks, but I cannot guarantee that it will fire the schedule more accurately than within milliseconds.
-
-```elixir
-config :etl_system, ETLSystem.Workflows, [
-  [
-    id: "server_tick",
-    frequency: "minute",
-    steps: [ Example.Tick ]
-  ]
-]
-```
-
-#### Cron-like
-
-This feature does not current exist, but it is on the roadmap.
-
 ### Telemetry Events
 
 The following events are published.
@@ -155,7 +108,6 @@ The following events are published.
 | Event tags | Purpose | Measurement | Metadata |
 | :--------- | :------ | :---------- | :------- |
 | `[:etl, :run, :started]` | A workflow has begun. | Map containing the current UTC timestamp. | Current state of the workflow in the form of an `ETLSystem.Workflow{}` |
-| `[:etl, :run, :schedule]` | A schedule for a workflow has triggered. | Map containing the current UTC timestamp. | Status of the schedule in the form of an `ETLSystem.Scheduler.State{}` |
 | `[:etl, :run, :finished]` | A workflow has finished the entire process. | Map containing the current UTC timestamp. | Current state of the workflow in the form of an `ETLSystem.Workflow{}` |
 | `[:etl, :run, :failed]` | A workflow has failed to complete. | Map containing the current UTC timestamp. | Current state of the workflow in the form of an `ETLSystem.Workflow{}` |
 | `[:etl, :run, :action]` | An individual task in the workflow has completed. | Map containing the current UTC timestamp and the current task that is starting. | Current state of the workflow in the form of an `ETLSystem.Workflow{}` |
@@ -241,6 +193,6 @@ end
 
 # Roadmap
 - Tests
-- Create actually useful default tasks
-- Cron-like `schedule` option
+- Replace "Example" tasks with "Basic" tasks
 - Better defined Telemetry events
+- Ability to "Call" vs. "Cast" for running a workflow

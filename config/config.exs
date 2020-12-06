@@ -9,7 +9,6 @@ config :etl_system, ETLSystem.Workflows, [
   ],
   [
     id: "count_to_ten",
-    frequency: "minute",
     steps: [
       {Examples.Counter, 10}
     ]

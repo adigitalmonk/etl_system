@@ -25,7 +25,8 @@ defmodule ETLSystem.Task do
           [:etl, :run, :action],
           %{
             timestamp: DateTime.utc_now(),
-            task: __MODULE__
+            task: __MODULE__,
+            pid: self()
           },
           workflow
         )
